@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Princeton Audio Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://js.puter.com/v2/"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #1C1812;
+      --parchment: #F7F2E8;
+      --cream: #FDF9F3;
+      --gold: #B8860B;
+      --gold-light: #D4A843;
+      --stone: #7A6E5F;
+      --stone-light: #B5ADA0;
+      --rust: #8B4513;
+      --navy: #1B2A4A;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--ink);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink);
+      min-height: 100vh;
+      background: var(--ink);
+    }
+
+    /* ── HERO HEADER ── */
+    .hero {
+      background: var(--navy);
+      padding: 36px 24px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse 80% 60% at 50% 120%, rgba(184,134,11,0.18) 0%, transparent 70%),
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 39px,
+          rgba(255,255,255,0.02) 39px,
+          rgba(255,255,255,0.02) 40px
+        );
+      pointer-events: none;
+    }
+    .hero-label {
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+    }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 56px;
+      font-weight: 700;
+      color: #F5EDD6;
+      line-height: 0.95;
+      letter-spacing: -1px;
+      margin-bottom: 6px;
+      position: relative;
+    }
+    .hero-title span {
+      display: block;
+      font-size: 20px;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--stone-light);
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 0 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin-top: 20px;
+    }
+    .hero-meta-item {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.05em;
+    }
+    .hero-meta-dot {
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* ── PROGRESS DOTS ── */
+    .dots-bar {
+      background: var(--navy);
+      padding: 14px 24px 16px;
+      border-bottom: 1px solid rgba(184,134,11,0.15);
+    }
+    .dots-inner {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .dot {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.12);
+      transition: all 0.4s ease;
+      cursor: pointer;
+      flex: 1;
+      border: none;
+      padding: 0;
+    }
+    .dot.done { background: rgba(184,134,11,0.5); }
+    .dot.active { background: var(--gold-light); flex: 2.5; }
+
+    /* ── MAIN CARD ── */
+    .main { background: var(--cream); min-height: calc(100vh - 180px); }
+
+    .card {
+      background: white;
+      margin: 0;
+      padding: 28px 24px 24px;
+      border-bottom: 1px solid #EDE8DF;
+      animation: slideUp 0.35s ease;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .stop-counter {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--stone-light);
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .walk-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #FFF8ED;
+      border: 1px solid #F0E0B8;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 10px;
+      color: var(--rust);
+      font-weight: 500;
+    }
+
+    .stop-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .stop-tagline {
+      font-size: 12px;
+      color: var(--stone);
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+
+    /* ── PLAYER ── */
+    .player {
+      background: var(--navy);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 32px;
+      margin-bottom: 14px;
+    }
+    .wave-bar {
+      flex: 1;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.12);
+      transition: height 0.1s ease, background 0.3s ease;
+    }
+    .wave-bar.active-wave { background: var(--gold-light); }
+
+    .progress-track {
+      height: 2px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 1px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--gold-light);
+      border-radius: 1px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .ctrl-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: transparent;
+      color: rgba(255,255,255,0.6);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .ctrl-btn:hover { border-color: rgba(255,255,255,0.4); color: white; }
+    .ctrl-btn:disabled { opacity: 0.2; cursor: default; }
+
+    .play-btn {
+      width: 58px; height: 58px;
+      border-radius: 50%;
+      border: none;
+      background: var(--gold);
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(184,134,11,0.4);
+      transition: all 0.2s;
+      position: relative;
+    }
+    .play-btn:hover { background: var(--gold-light); transform: scale(1.05); }
+    .play-btn.loading { animation: pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+
+    .play-status {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── SCRIPT PANEL ── */
+    .script-panel {
+      background: var(--parchment);
+      border-radius: 10px;
+      padding: 18px;
+      border-left: 3px solid var(--gold);
+      margin-bottom: 0;
+    }
+    .script-label {
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .script-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      line-height: 1.75;
+      color: #3D3228;
+      font-weight: 400;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .script-text::-webkit-scrollbar { width: 3px; }
+    .script-text::-webkit-scrollbar-thumb { background: var(--stone-light); border-radius: 2px; }
+
+    /* ── STOP LIST ── */
+    .stop-list {
+      padding: 20px 0 40px;
+      background: var(--cream);
+    }
+    .list-header {
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      color: var(--stone-light);
+      text-transform: uppercase;
+      padding: 0 24px 12px;
+      font-weight: 600;
+    }
+    .list-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 24px;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+    .list-item:hover { background: rgba(0,0,0,0.02); }
+    .list-item.active { background: #FFF8ED; }
+    .list-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--stone-light);
+      min-width: 28px;
+      transition: color 0.2s;
+    }
+    .list-item.active .list-num { color: var(--gold); }
+    .list-item.done .list-num { color: var(--gold-light); }
+    .list-info { flex: 1; }
+    .list-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 2px;
+    }
+    .list-sub { font-size: 11px; color: var(--stone-light); }
+    .list-check {
+      font-size: 13px;
+      color: #6CAF6C;
+    }
+    .list-arrow {
+      font-size: 13px;
+      color: var(--gold);
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 10px;
+      color: var(--stone-light);
+      letter-spacing: 0.1em;
+      padding: 8px 0 24px;
+    }
+
+    @keyframes waveAnim {
+      0%, 100% { height: 4px; }
+      50% { height: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <p class="hero-label">Self-Guided Walking Tour</p>
+  <h1 class="hero-title">
+    Princeton
+    <span>Audio Guide</span>
+  </h1>
+  <div class="hero-meta">
+    <span class="hero-meta-item">7 STOPS</span>
+    <div class="hero-meta-dot"></div>
+    <span class="hero-meta-item">~1.5 MILES</span>
+    <div class="hero-meta-dot"></div>
+    <span class="hero-meta-item">75 MIN</span>
+    <div class="hero-meta-dot"></div>
+    <span class="hero-meta-item">EST. 1746</span>
+  </div>
+</div>
+
+<div class="dots-bar">
+  <div class="dots-inner" id="dotsBar"></div>
+</div>
+
+<div class="main">
+  <div class="card" id="mainCard">
+    <div class="card-top">
+      <span class="stop-counter" id="stopCounter">Stop 1 of 7</span>
+      <span class="walk-pill" id="walkPill" style="display:none">↗ <span id="walkText"></span></span>
+    </div>
+    <h2 class="stop-name" id="stopName"></h2>
+    <p class="stop-tagline" id="stopTagline"></p>
+
+    <div class="player">
+      <div class="waveform" id="waveform"></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="controls">
+        <button class="ctrl-btn" id="prevBtn" onclick="changeStop(-1)">←</button>
+        <div>
+          <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+        </div>
+        <button class="ctrl-btn" id="nextBtn" onclick="changeStop(1)">→</button>
+      </div>
+      <p class="play-status" id="playStatus" style="text-align:center;margin-top:12px;">Tap ▶ to hear narration</p>
+    </div>
+
+    <div class="script-panel">
+      <p class="script-label">Narration Script</p>
+      <p class="script-text" id="scriptText"></p>
+    </div>
+  </div>
+
+  <div class="stop-list">
+    <p class="list-header">All Stops</p>
+    <div id="stopList"></div>
+    <p class="footer-note">Princeton University · May 2026</p>
+  </div>
+</div>
+
+<script>
+const stops = [
+  {
+    title: "Nassau Hall",
+    tagline: "The Heart of Princeton · Est. 1756",
+    duration: "10 min",
+    walk: null,
+    script: `Welcome to Nassau Hall — the oldest building at Princeton and one of the most historically significant structures in America. Built in 1756, this was originally the entire university. Every classroom, every dormitory, the library, the chapel — all under one roof. When it was completed, it was the largest building in all of the colonies. During the Revolutionary War, both British and American forces occupied Nassau Hall. Cannon fire scarred its walls. In 1783, the Continental Congress met right here, making Princeton briefly the capital of the new United States. George Washington was formally congratulated here after the British surrender. The bronze tigers flanking the entrance were added in the 1800s — Princeton alumni have been stealing, painting, and occasionally blowing them up ever since. Take a moment to walk around to the back lawn. The quiet garden and old cemetery behind the building are worth seeing.`
+  },
+  {
+    title: "Maclean House",
+    tagline: "The President's Residence · Since 1756",
+    duration: "3 min",
+    walk: "2 min from Nassau Hall",
+    script: `Just to the right of Nassau Hall sits Maclean House, one of the oldest surviving buildings on campus and the official residence of Princeton's president. Built around 1756, it was originally the home of the college's first president, Jonathan Dickinson. What makes this building remarkable is its continuity — it has housed every Princeton president for nearly 270 years. Woodrow Wilson lived here before moving to Prospect House. The building looks modest for a president's home, especially compared to mansions at other Ivy League schools. That understated elegance is very Princeton. The university has always prided itself on substance over spectacle.`
+  },
+  {
+    title: "Art Museum",
+    tagline: "World-Class Collection · Free Entry",
+    duration: "20–30 min",
+    walk: "3 min southeast",
+    script: `The Princeton University Art Museum is one of the finest university art museums in the world, and it is completely free. The collection spans five thousand years and includes over 115,000 works — ancient Greek and Roman antiquities, Chinese bronzes, European masters, American modernists, and a remarkable collection of African and pre-Columbian art. The building itself was dramatically renovated and reopened in 2023, with a stunning new atrium flooding the space with natural light. Even if you only have 20 minutes, walk through the ancient Mediterranean galleries and the American art wing. The Monet water lilies study alone is worth the detour.`
+  },
+  {
+    title: "University Chapel",
+    tagline: "Third Largest University Chapel in the World",
+    duration: "10 min",
+    walk: "4 min west",
+    script: `Stop and look up. The Princeton University Chapel is the third largest university chapel in the world, and it is breathtaking. Completed in 1928, it seats over 2,000 people and stretches nearly 280 feet from end to end. The Gothic architecture is intentional — Princeton modeled its campus on Oxford and Cambridge, and the chapel was meant to be the spiritual and aesthetic centerpiece. Step inside. The stained glass windows are extraordinary, filtering light into deep blues and golds. The carved wooden choir stalls took craftsmen years to complete. Even if you are not religious, this space has a stillness to it that is hard to find anywhere else. Albert Einstein attended lectures here occasionally during his years at the nearby Institute for Advanced Study. He reportedly sat in the back and said very little.`
+  },
+  {
+    title: "Blair Arch",
+    tagline: "Gothic Masterpiece · Most Photogenic Spot",
+    duration: "5 min",
+    walk: "3 min north",
+    script: `Blair Arch may be the single most photogenic spot on campus, which is saying something given the competition. Completed in 1897, it connects Blair Hall to the rest of the residential college system and frames a perfect view of the lawns beyond. The Gothic stonework is extraordinarily detailed — look at the carved figures and decorative elements near the top of the arch. Princeton's residential colleges were designed to recreate the feel of Oxford, with cloistered courtyards and covered walkways. Blair is the finest example. On warm evenings, a cappella groups sing under the arch — the acoustics are remarkable. Walk through and turn around. The framed view back toward Nassau Hall is one of the classic Princeton photographs.`
+  },
+  {
+    title: "Prospect House",
+    tagline: "Woodrow Wilson's Former Home",
+    duration: "10 min",
+    walk: "5 min south on Prospect Ave",
+    script: `Prospect House has one of the most interesting histories of any building on campus. Built in 1849 as a private Italianate villa, it became the university president's official residence in 1878. Woodrow Wilson lived here from 1902 to 1910 — first as Princeton's president, then as the governor of New Jersey, before winning the White House in 1912. He reportedly paced these gardens while working through his ideas about democracy and international order. The gardens are the real draw. Designed as a formal English garden with seasonal plantings, they are maintained by the university and open to the public year round. In May, the roses and wisteria are usually in full bloom. Walk the full perimeter if you have time — the back of the garden, away from the main path, is quieter and more beautiful.`
+  },
+  {
+    title: "Cannon Green",
+    tagline: "Home of Princeton's Most Stolen Object",
+    duration: "5 min",
+    walk: "5 min back north",
+    script: `Cannon Green is the open lawn at the center of campus, named for the Revolutionary War cannon buried at its center. The cannon was captured from the British during the Battle of Princeton in 1777 and has been buried here since 1840, with only its muzzle showing above ground. This is where Princeton's most beloved tradition plays out: rival classes attempt to bury the cannon's muzzle entirely with dirt, or to paint it in class colors. The university maintenance crew digs it back out. This has been going on since the 1870s. The green is surrounded by some of the finest Gothic collegiate architecture in America. On a clear afternoon, with the light coming across the grass and hitting the stone facades, it is easy to understand why Princeton is considered one of the most beautiful campuses in the world. Congratulations — you have completed the tour.`
+  }
+];
+
+let current = 0;
+let isPlaying = false;
+let isLoading = false;
+let audioObj = null;
+let progressInterval = null;
+let puterReady = false;
+let completedStops = new Set();
+
+// Wait for puter
+function checkPuter() {
+  if (typeof puter !== 'undefined') {
+    puterReady = true;
+  } else {
+    setTimeout(checkPuter, 300);
+  }
+}
+checkPuter();
+
+// Build waveform bars
+const waveform = document.getElementById('waveform');
+for (let i = 0; i < 36; i++) {
+  const bar = document.createElement('div');
+  bar.className = 'wave-bar';
+  const h = Math.random() * 20 + 4;
+  bar.style.height = h + 'px';
+  bar.dataset.baseH = h;
+  waveform.appendChild(bar);
+}
+
+function buildDots() {
+  const bar = document.getElementById('dotsBar');
+  bar.innerHTML = '';
+  stops.forEach((_, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'dot' + (i === current ? ' active' : i < current ? ' done' : '');
+    btn.onclick = () => goTo(i);
+    bar.appendChild(btn);
+  });
+}
+
+function buildStopList() {
+  const list = document.getElementById('stopList');
+  list.innerHTML = '';
+  stops.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'list-item' + (i === current ? ' active' : '') + (completedStops.has(i) ? ' done' : '');
+    btn.innerHTML = `
+      <span class="list-num">${i + 1}</span>
+      <div class="list-info">
+        <div class="list-title">${s.title}</div>
+        <div class="list-sub">${s.duration}${s.walk ? ' · ' + s.walk : ''}</div>
+      </div>
+      ${completedStops.has(i) ? '<span class="list-check">✓</span>' : i === current ? '<span class="list-arrow">→</span>' : ''}
+    `;
+    btn.onclick = () => goTo(i);
+    list.appendChild(btn);
+  });
+}
+
+function render() {
+  const s = stops[current];
+  document.getElementById('stopCounter').textContent = `Stop ${current + 1} of ${stops.length}`;
+  document.getElementById('stopName').textContent = s.title;
+  document.getElementById('stopTagline').textContent = s.tagline;
+  document.getElementById('scriptText').textContent = s.script;
+
+  const walkPill = document.getElementById('walkPill');
+  if (s.walk) {
+    walkPill.style.display = 'flex';
+    document.getElementById('walkText').textContent = s.walk;
+  } else {
+    walkPill.style.display = 'none';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === stops.length - 1;
+  document.getElementById('progressFill').style.width = '0%';
+
+  buildDots();
+  buildStopList();
+
+  // Re-animate card
+  const card = document.getElementById('mainCard');
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  card.style.animation = 'slideUp 0.35s ease';
+}
+
+function stopAudio() {
+  if (audioObj) {
+    try { audioObj.pause(); } catch(e) {}
+    audioObj = null;
+  }
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  clearInterval(progressInterval);
+  isPlaying = false;
+  isLoading = false;
+  setPlayBtn('idle');
+  stopWaveAnim();
+}
+
+function setPlayBtn(state) {
+  const btn = document.getElementById('playBtn');
+  const status = document.getElementById('playStatus');
+  if (state === 'idle') {
+    btn.textContent = '▶';
+    btn.classList.remove('loading');
+    status.textContent = 'Tap ▶ to hear narration';
+  } else if (state === 'loading') {
+    btn.textContent = '◌';
+    btn.classList.add('loading');
+    status.textContent = 'Generating audio...';
+  } else if (state === 'playing') {
+    btn.textContent = '⏸';
+    btn.classList.remove('loading');
+    status.textContent = 'Playing narration';
+  }
+}
+
+let waveAnimFrame;
+function startWaveAnim() {
+  const bars = document.querySelectorAll('.wave-bar');
+  function animate() {
+    bars.forEach(bar => {
+      const h = Math.random() * 24 + 4;
+      bar.style.height = h + 'px';
+      bar.classList.add('active-wave');
+    });
+    waveAnimFrame = requestAnimationFrame(() => setTimeout(animate, 80));
+  }
+  animate();
+}
+function stopWaveAnim() {
+  cancelAnimationFrame(waveAnimFrame);
+  document.querySelectorAll('.wave-bar').forEach(bar => {
+    bar.style.height = bar.dataset.baseH + 'px';
+    bar.classList.remove('active-wave');
+  });
+}
+
+function startProgress(durationMs) {
+  let elapsed = 0;
+  const fill = document.getElementById('progressFill');
+  progressInterval = setInterval(() => {
+    elapsed += 200;
+    fill.style.width = Math.min((elapsed / durationMs) * 100, 98) + '%';
+  }, 200);
+}
+
+async function togglePlay() {
+  if (isLoading) return;
+
+  if (isPlaying) {
+    stopAudio();
+    return;
+  }
+
+  isLoading = true;
+  setPlayBtn('loading');
+
+  const script = stops[current].script;
+
+  // Try Puter.js first
+  if (puterReady && typeof puter !== 'undefined') {
+    try {
+      const audio = await puter.ai.txt2speech(script);
+      audioObj = audio;
+      isLoading = false;
+      isPlaying = true;
+      setPlayBtn('playing');
+      startWaveAnim();
+      startProgress(script.length * 52);
+      audio.play();
+      audio.onended = () => {
+        completedStops.add(current);
+        stopAudio();
+        document.getElementById('progressFill').style.width = '100%';
+        buildStopList();
+      };
+      return;
+    } catch(e) {
+      console.warn('Puter TTS failed, falling back to browser speech:', e);
+    }
+  }
+
+  // Fallback: browser speech synthesis
+  try {
+    const utterance = new SpeechSynthesisUtterance(script);
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+
+    // Try to find a good voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v => v.name.includes('Google') || v.name.includes('Natural') || v.lang === 'en-US');
+    if (preferred) utterance.voice = preferred;
+
+    isLoading = false;
+    isPlaying = true;
+    setPlayBtn('playing');
+    startWaveAnim();
+    startProgress(script.length * 55);
+
+    utterance.onend = () => {
+      completedStops.add(current);
+      stopAudio();
+      document.getElementById('progressFill').style.width = '100%';
+      buildStopList();
+    };
+    utterance.onerror = () => stopAudio();
+
+    window.speechSynthesis.speak(utterance);
+  } catch(e) {
+    stopAudio();
+    alert('Audio not available on this device. You can read the script below.');
+  }
+}
+
+function goTo(idx) {
+  stopAudio();
+  current = idx;
+  render();
+}
+
+function changeStop(dir) {
+  const next = current + dir;
+  if (next >= 0 && next < stops.length) goTo(next);
+}
+
+// Init
+render();
+</script>
+</body>
+</html>

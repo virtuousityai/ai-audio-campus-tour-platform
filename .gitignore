@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# Build outputs
+dist/
+build/
+.vite/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Docker
+.docker/
+
+# IDE
+.DS_Store
+.vscode/settings.json
+.idea/
+
+# Logs
+*.log
+logs/
+
+# DB
+*.sqlite
+*.db
+
+# Secrets
+*.pem
+*.key
