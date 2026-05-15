@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { X, Map as MapIcon, BookOpen, Star, Trophy } from 'lucide-react'
 import { useTour } from '@/hooks/useTour'
 import { useTourStore } from '@/store/tourStore'
 import { useUserStore } from '@/store/userStore'
+import { useGPS } from '@/hooks/useGPS'
 import { Player } from '@/components/Player/Player'
 import { TourMap } from '@/components/Map/TourMap'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { ErrorState } from '@/components/ui/ErrorState'
+import { GPSBadge } from '@/components/ui/GPSBadge'
+import { OfflineBanner } from '@/components/ui/OfflineBanner'
 
 type Tab = 'guide' | 'map'
 
@@ -36,6 +39,29 @@ export function TourPlayer() {
     setDepthTier,
     markPoiComplete,
   } = useTour(tourId ?? null)
+
+  // GPS: watch position and detect proximity to POIs
+  const { status: gpsStatus, nearestPoiIndex, startWatching, stopWatching } = useGPS(pois)
+
+  // Start GPS watching when tour loads, stop on exit
+  useEffect(() => {
+    startWatching()
+    return () => stopWatching()
+  }, [startWatching, stopWatching])
+
+  // GPS autoplay: auto-advance to nearest POI when user enters its radius
+  const prevNearestRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (
+      nearestPoiIndex !== null &&
+      nearestPoiIndex !== currentPoiIndex &&
+      nearestPoiIndex !== prevNearestRef.current
+    ) {
+      prevNearestRef.current = nearestPoiIndex
+      setCurrentPoi(nearestPoiIndex)
+      setActiveTab('guide')
+    }
+  }, [nearestPoiIndex, currentPoiIndex, setCurrentPoi])
 
   // Activate tour in store on mount
   useEffect(() => {
@@ -122,7 +148,7 @@ export function TourPlayer() {
         className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between border-b border-white/10"
         style={{ background: 'var(--navy)' }}
       >
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex items-center gap-2">
           {isLoading ? (
             <Skeleton className="h-4 w-32" />
           ) : (
@@ -130,6 +156,7 @@ export function TourPlayer() {
               {pois[0]?.tour_id ? 'Campus Tour' : 'Audio Tour'}
             </p>
           )}
+          <GPSBadge status={gpsStatus} />
         </div>
         <button
           onClick={handleExit}
@@ -348,6 +375,8 @@ export function TourPlayer() {
         {/* Bottom safe area */}
         <div className="h-8" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} />
       </main>
+
+      <OfflineBanner />
     </div>
   )
 }

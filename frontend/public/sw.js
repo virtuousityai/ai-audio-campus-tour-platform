@@ -1,20 +1,17 @@
-const CACHE_VERSION = 'v1'
-const APP_SHELL_CACHE = `audio-tour-shell-${CACHE_VERSION}`
-const STATIC_CACHE = `audio-tour-static-${CACHE_VERSION}`
+const CACHE_NAME = 'audio-tour-v1'
+const API_CACHE = 'audio-tour-api-v1'
 
-const APP_SHELL_URLS = ['/', '/manifest.json']
-
-// Install: cache app shell
+// Install: cache the app shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
-      .open(APP_SHELL_CACHE)
-      .then((cache) => cache.addAll(APP_SHELL_URLS))
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(['/', '/manifest.json']))
       .then(() => self.skipWaiting())
   )
 })
 
-// Activate: clean up old caches
+// Activate: clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
@@ -22,7 +19,7 @@ self.addEventListener('activate', (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((k) => k !== APP_SHELL_CACHE && k !== STATIC_CACHE)
+            .filter((k) => k !== CACHE_NAME && k !== API_CACHE)
             .map((k) => caches.delete(k))
         )
       )
@@ -30,85 +27,67 @@ self.addEventListener('activate', (event) => {
   )
 })
 
-// Fetch strategy
+// Fetch strategy:
+// - /api/* → network first, fall back to API cache (stale data ok)
+// - Navigation (HTML) → network first, fall back to /
+// - Static assets (JS/CSS/fonts) → cache first, then network
+// - Audio files → cache first (important for offline playback)
 self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
 
-  // Network-first for API calls
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirst(request))
-    return
-  }
-
-  // Cache-first for static assets (JS, CSS, fonts, images)
+  // API calls: network-first, cache fallback
   if (
-    request.destination === 'script' ||
-    request.destination === 'style' ||
-    request.destination === 'font' ||
-    request.destination === 'image' ||
-    url.pathname.match(/\.(js|css|woff2?|ttf|png|jpg|svg|ico)$/)
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/cities') ||
+    url.pathname.startsWith('/tours') ||
+    url.pathname.startsWith('/pois')
   ) {
-    event.respondWith(cacheFirst(request, STATIC_CACHE))
+    event.respondWith(
+      fetch(request)
+        .then((res) => {
+          const clone = res.clone()
+          caches.open(API_CACHE).then((c) => c.put(request, clone))
+          return res
+        })
+        .catch(() => caches.match(request))
+    )
     return
   }
 
-  // Stale-while-revalidate for navigation
+  // Navigation: network-first, fall back to /
   if (request.mode === 'navigate') {
-    event.respondWith(staleWhileRevalidate(request, APP_SHELL_CACHE))
+    event.respondWith(
+      fetch(request).catch(
+        () => caches.match('/') ?? new Response('Offline', { status: 503 })
+      )
+    )
     return
   }
 
-  // Default: network with cache fallback
-  event.respondWith(networkFirst(request))
+  // Static assets: cache-first
+  if (
+    url.pathname.match(/\.(js|css|woff2?|png|svg|ico)$/) ||
+    url.hostname.includes('fonts.googleapis.com') ||
+    url.hostname.includes('fonts.gstatic.com')
+  ) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached
+        return fetch(request).then((res) => {
+          const clone = res.clone()
+          caches.open(CACHE_NAME).then((c) => c.put(request, clone))
+          return res
+        })
+      })
+    )
+    return
+  }
+
+  // Default: network
+  event.respondWith(
+    fetch(request).catch(
+      () => caches.match(request) ?? Promise.reject('offline')
+    )
+  )
 })
-
-async function networkFirst(request) {
-  try {
-    const response = await fetch(request)
-    return response
-  } catch {
-    const cached = await caches.match(request)
-    return cached || new Response('Offline', { status: 503 })
-  }
-}
-
-async function cacheFirst(request, cacheName) {
-  const cached = await caches.match(request)
-  if (cached) return cached
-
-  try {
-    const response = await fetch(request)
-    if (response.ok) {
-      const cache = await caches.open(cacheName)
-      cache.put(request, response.clone())
-    }
-    return response
-  } catch {
-    return new Response('Asset unavailable offline', { status: 503 })
-  }
-}
-
-async function staleWhileRevalidate(request, cacheName) {
-  const cache = await caches.open(cacheName)
-  const cached = await cache.match(request)
-
-  const fetchPromise = fetch(request)
-    .then((response) => {
-      if (response.ok) cache.put(request, response.clone())
-      return response
-    })
-    .catch(() => null)
-
-  // For navigations, fall back to root if specific page not cached
-  if (cached) {
-    fetchPromise // update in background
-    return cached
-  }
-
-  const fetched = await fetchPromise
-  if (fetched) return fetched
-
-  const root = await cache.match('/')
-  return root || new Response('Offline', { status: 503 })
-}
