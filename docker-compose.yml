@@ -56,8 +56,6 @@ services:
       - "5174:5173"
     depends_on:
       - backend
-    environment:
-      VITE_API_URL: http://localhost:8001
     volumes:
       - ./frontend:/app
       - /app/node_modules
