@@ -17,31 +17,52 @@ export function CityCard({ city }: CityCardProps) {
       className="group w-full text-left rounded-2xl overflow-hidden border border-white/10 hover:border-gold/40 transition-all duration-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
       aria-label={`${city.university} — ${city.name}`}
     >
-      {/* Hero area */}
-      <div
-        className="relative px-5 pt-6 pb-8 overflow-hidden"
-        style={{
-          background: city.hero_image
-            ? `linear-gradient(160deg, rgba(27,42,74,0.92) 0%, rgba(28,24,18,0.96) 100%), url(${city.hero_image}) center/cover no-repeat`
-            : 'linear-gradient(160deg, var(--navy) 0%, var(--ink) 100%)',
-        }}
-      >
-        {/* Gold accent line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-gold/0 via-gold to-gold/0 group-hover:from-gold/30 group-hover:via-gold group-hover:to-gold/30 transition-all duration-300" />
+      {/* Hero image section */}
+      {city.hero_image ? (
+        <div className="relative h-40 overflow-hidden">
+          <img
+            src={city.hero_image}
+            alt={city.name}
+            loading="lazy"
+            className="w-full h-full object-cover"
+          />
+          {/* Dark gradient overlay at bottom for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/70" />
+          {/* Gold accent line at top */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-gold/0 via-gold to-gold/0 group-hover:from-gold/30 group-hover:via-gold group-hover:to-gold/30 transition-all duration-300" />
+          {/* Text overlaid on image */}
+          <div className="absolute bottom-0 left-0 right-0 px-5 pb-4 pt-2">
+            <p className="text-xs font-sans text-white/80 tracking-widest uppercase mb-0.5">
+              {city.university}
+            </p>
+            <h3 className="font-serif text-2xl font-bold text-white leading-tight group-hover:text-gold-light transition-colors duration-200">
+              {city.name}
+            </h3>
+          </div>
+        </div>
+      ) : (
+        /* Fallback: color gradient hero area */
+        <div
+          className="relative px-5 pt-6 pb-8 overflow-hidden"
+          style={{ background: 'linear-gradient(160deg, var(--navy) 0%, var(--ink) 100%)' }}
+        >
+          {/* Gold accent line */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-gold/0 via-gold to-gold/0 group-hover:from-gold/30 group-hover:via-gold group-hover:to-gold/30 transition-all duration-300" />
 
-        <p className="text-xs font-sans text-stone tracking-widest uppercase mb-1">
-          {city.university}
-        </p>
-        <h3 className="font-serif text-3xl font-bold text-cream leading-tight group-hover:text-gold-light transition-colors duration-200">
-          {city.name}
-        </h3>
-
-        {city.description && (
-          <p className="mt-2 text-sm font-sans text-stone-light leading-relaxed line-clamp-2">
-            {city.description}
+          <p className="text-xs font-sans text-stone tracking-widest uppercase mb-1">
+            {city.university}
           </p>
-        )}
-      </div>
+          <h3 className="font-serif text-3xl font-bold text-cream leading-tight group-hover:text-gold-light transition-colors duration-200">
+            {city.name}
+          </h3>
+
+          {city.description && (
+            <p className="mt-2 text-sm font-sans text-stone-light leading-relaxed line-clamp-2">
+              {city.description}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Footer */}
       <div className="px-5 py-3 bg-white/5 border-t border-white/10 flex items-center justify-between">

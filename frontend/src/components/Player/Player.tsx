@@ -68,20 +68,33 @@ function PlayerInner({ poi, totalStops, depthTier, onDepthChange, onPrev, onNext
     if (!narration) return
     setTtsError(false)
     setProgress(0)
-    speak(narration.script)
+    speak(narration.script, narration.audio_url ?? undefined)
   }
 
   const handlePause = () => stop()
 
   const statusText = () => {
     if (isLoading) return 'Generating audio...'
-    if (isPlaying) return 'Playing'
+    if (isPlaying) return narration?.audio_url ? 'Playing' : 'Playing (live TTS)'
     if (ttsError) return 'Audio unavailable — transcript shown below'
     return 'Tap ▶ to hear narration'
   }
 
   return (
     <div className="flex flex-col gap-4">
+      {/* POI photo */}
+      {poi.photo_url && (
+        <div className="relative h-44 rounded-xl overflow-hidden">
+          <img
+            src={poi.photo_url}
+            alt={poi.name}
+            loading="lazy"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-ink/90" />
+        </div>
+      )}
+
       {/* Stop header */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
