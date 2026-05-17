@@ -12,6 +12,7 @@ export default defineConfig({
   server: {
     port: 5173,
     host: '0.0.0.0',
+    allowedHosts: true,   // allow tunnel domains (Cloudflare, ngrok, etc.)
     proxy: {
       '/api': {
         target: process.env.VITE_API_URL || 'http://localhost:8001',
