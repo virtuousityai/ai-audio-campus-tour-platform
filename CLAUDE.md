@@ -8,7 +8,7 @@ Visitors walk a campus; GPS auto-advances through Points of Interest; each stop 
 no competitor (VoiceMap, Rick Steves, izi.TRAVEL) has depth-tiered narration.
 
 **GitHub:** https://github.com/virtuousityai/ai-audio-campus-tour-platform  
-**Current version:** v0.2.0  
+**Current version:** v0.3.0  
 **Working directory:** `/Users/sathiyankutty/Documents/claude-code/ai-audio-campus-tour-platform/`
 
 ---

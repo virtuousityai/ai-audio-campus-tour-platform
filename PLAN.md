@@ -12,6 +12,20 @@ No competitor has this. Market: $174M audio tour sector.
 
 ## Version Log
 
+### v0.3.0 — Stock Photos (City Cards + POI Player)
+*2026-05-16 · commit 36e43a1*
+
+**Shipped:**
+- CityCard: hero_image renders as 160px photo strip with gradient overlay; navy fallback when null
+- Player: poi.photo_url shown as 176px image above stop header; hidden when null
+- TourCard: cover_image already wired (no change needed)
+- 29 image URLs backfilled via SQL:
+  - 3 city heroes + 3 tour covers: Unsplash (atmospheric campus shots, free license)
+  - 23 POI photos: Wikimedia Commons (real landmark photos, CC licensed)
+- Image sources: Princeton/UMICH/TAMU landmarks — Nassau Hall, Michigan Stadium aerial, Kyle Field panorama, Blair Arch, Law Quad, Century Tree, etc.
+
+---
+
 ### v0.1.0 — Phase 1A: Foundation Scaffold
 *2026-05-14 · commit e390021*
 
